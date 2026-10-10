@@ -1,0 +1,70 @@
+---
+title: "ggplot2 Practice"
+format: html
+---
+
+Assignment for Monday, September 21, 2026.
+
+Used the birth data file `nat2024samp5702.csv`.
+
+```{r}
+library(tidyverse)
+df <- read_csv("nat2024samp5702.csv")
+```
+
+## Birth weight histogram
+
+`dbwt` is birth weight.
+
+```{r}
+ggplot(df, aes(x = dbwt)) +
+  geom_histogram(fill = "cornflowerblue",
+                 color = "blue",
+                 boundary = 0,
+                 binwidth = 250) +
+  theme_minimal()
+```
+
+## Changes to the dbwt graph
+
+Changed the colors and binwidth & added axis labels.
+
+```{r}
+ggplot(df, aes(x = dbwt)) +
+  geom_histogram(fill = "orange",
+                 color = "black",
+                 boundary = 0,
+                 binwidth = 200) +
+  labs(x = "Birth Weight (grams)",
+       y = "Count",
+       title = "Birth Weight") +
+  theme_minimal()
+```
+
+## Mother age
+
+```{r}
+ggplot(df, aes(x = mager)) +
+  geom_histogram(binwidth = 1, fill = "lightblue", color = "black") +
+  labs(x = "Mother Age", y = "Count") +
+  theme_minimal()
+```
+
+## Birth weight by sex
+
+```{r}
+ggplot(df, aes(x = sex, y = dbwt)) +
+  geom_boxplot() +
+  labs(x = "Sex", y = "Birth Weight") +
+  theme_minimal()
+```
+
+## Gestational age vs birth weight
+
+```{r}
+ggplot(df, aes(x = combgest, y = dbwt)) +
+  geom_point(alpha = 0.2) +
+  labs(x = "Gestational Age (Weeks)",
+       y = "Birth Weight (Grams)") +
+  theme_minimal()
+```

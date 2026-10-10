@@ -1,0 +1,39 @@
+---
+title: "My first Quarto document"
+author: "Mit S."
+date: "21 Sept 2026"
+format: html
+---
+
+## Getting started
+
+This is a Quarto (`.qmd`) file. It mixes **text** and **R code**.
+
+When I render it, Quarto runs the code and builds an HTML page.
+
+## Math in R
+
+```{r}
+2 + 2
+sqrt(16)
+mean(c(10, 20, 30))
+```
+
+## A tiny plot
+
+```{r}
+#| label: mpg-hist
+#| fig-cap: "Distribution of mpg in mtcars"
+
+hist(mtcars$mpg,
+     main = "Miles per gallon",
+     xlab = "mpg",
+     col = "steelblue",
+     border = "white")
+```
+
+## Checklist progress
+
+- [x] R is installed
+- [x] tidyverse + MASS installed
+- [x] This file rendered to HTML

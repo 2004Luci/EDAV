@@ -1,0 +1,25 @@
+---
+title: "ggplot2 practice"
+format: 
+  html:
+    embed-resources: true
+
+---
+
+This assignment is in place of class on Monday, September 21, 2026.
+
+Run this code and then practice creating new code chunks with additional graphs. First makes changes to `dbwt` graph, and then create graphs using other columns in the dataset.
+
+```{r}
+#| label: birthweight
+library(tidyverse)
+df <- read_csv("nat2024samp.csv")
+ggplot(df, aes(x = dbwt)) + 
+  geom_histogram(fill = "cornflowerblue",
+                 color = "blue",
+                 boundary = 0,
+                 binwidth = 250) +
+  theme_minimal()
+```
+
+

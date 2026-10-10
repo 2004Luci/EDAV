@@ -1,0 +1,136 @@
+---
+title: "ggplot2 Practice"
+format: 
+  html:
+    embed-resources: true
+---
+
+This assignment is in place of class on Monday, September 21, 2026.
+
+Run this code and then practice creating new code chunks with additional graphs. First make changes to the `dbwt` graph, and then create graphs using other columns in the dataset.
+
+```{r}
+#| label: setup
+library(tidyverse)
+
+df <- read_csv("nat2024samp5702.csv", show_col_types = FALSE)
+
+# Quick look
+glimpse(df |> select(dbwt, mager, sex, bmi, combgest, wtgain))
+```
+
+## 1. Original birthweight histogram
+
+`dbwt` = birth weight in grams. Values of `9999` are missing codes, so we filter them out.
+
+```{r}
+#| label: birthweight
+df_bw <- df |> filter(dbwt < 9999)
+
+ggplot(df_bw, aes(x = dbwt)) + 
+  geom_histogram(fill = "cornflowerblue",
+                 color = "blue",
+                 boundary = 0,
+                 binwidth = 250) +
+  theme_minimal()
+```
+
+## 2. Changed `dbwt` graph
+
+Practice: change color, binwidth, add labels, and facet by baby sex.
+
+```{r}
+#| label: birthweight-improved
+ggplot(df_bw, aes(x = dbwt)) +
+  geom_histogram(fill = "darkorange",
+                 color = "white",
+                 boundary = 0,
+                 binwidth = 200) +
+  facet_wrap(~ sex) +
+  labs(
+    title = "Birth weight by sex",
+    x = "Birth weight (grams)",
+    y = "Number of births"
+  ) +
+  theme_minimal()
+```
+
+## 3. More graphs with other columns
+
+### Mother's age
+
+```{r}
+#| label: mother-age
+ggplot(df, aes(x = mager)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
+  labs(
+    title = "Mother's age at birth",
+    x = "Age (years)",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+### Birth weight vs gestational age
+
+```{r}
+#| label: weight-vs-gestation
+df_plot <- df |>
+  filter(dbwt < 9999, combgest < 99)
+
+ggplot(df_plot, aes(x = combgest, y = dbwt)) +
+  geom_point(alpha = 0.15, color = "purple") +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  labs(
+    title = "Birth weight vs gestational age",
+    x = "Gestational age (weeks)",
+    y = "Birth weight (grams)"
+  ) +
+  theme_minimal()
+```
+
+### BMI of mother (boxplot by sex of baby)
+
+```{r}
+#| label: bmi-by-sex
+df_bmi <- df |>
+  filter(bmi < 99)
+
+ggplot(df_bmi, aes(x = sex, y = bmi, fill = sex)) +
+  geom_boxplot(show.legend = FALSE) +
+  labs(
+    title = "Mother's BMI by infant sex",
+    x = "Infant sex",
+    y = "BMI"
+  ) +
+  theme_minimal()
+```
+
+### Births by month
+
+```{r}
+#| label: births-by-month
+ggplot(df, aes(x = factor(dob_mm))) +
+  geom_bar(fill = "seagreen") +
+  labs(
+    title = "Births by month (2024 sample)",
+    x = "Month",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+## Your turn
+
+Add a new chunk below and try one of these:
+
+- Change `binwidth` on the birthweight plot
+- Make a scatterplot of `mager` vs `dbwt`
+- Use `geom_density()` instead of `geom_histogram()`
+- Color points by `sex`
+
+```{r}
+#| label: my-practice
+# Write your own ggplot here
+
+```
