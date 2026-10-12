@@ -98,7 +98,7 @@ likely explanations, not facts about this file.
 
 ## What I checked
 
-All of this is in the "Data checks" section at the end of the `.qmd`.
+I ran these checks while exploring the data. They are not in the `.qmd`, which only contains the 10 figures.
 
 - **No duplicates.** No duplicated rows and no duplicated `fips` + `bedrooms`.
   Every record has all 5 bedroom sizes.
