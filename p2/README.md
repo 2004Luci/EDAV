@@ -11,7 +11,7 @@ its rendered PDF.
 | File | What it is |
 |---|---|
 | `PSet2-ms7556.qmd` | The Quarto source. Submit this. |
-| `ACSPUMS1Y2024_2026-11-08T19_39_51.008Z.csv` | The MDAT download (not modified). |
+| `health-insurance.csv` | The MDAT download (renamed; not modified). |
 | `outputs/submission/PSet2-ms7556.pdf` | Rendered with the R code shown. Submit this. |
 | `outputs/printout/PSet2-ms7556-printout.pdf` | Same document, code hidden. Print this (in color). |
 | `render_pdfs.sh` | Renders both PDFs in one go. |
@@ -56,13 +56,14 @@ I checked that all 10 figure images are byte-for-byte identical in the two
 versions (the jitter in Figure 10 uses `seed = 1`). Rendered with R 4.6.1,
 ggplot2 4.0.3 and Quarto 1.10.18.
 
-**Updated data.** The code picks up the newest file in the folder whose name
-starts with `ACSPUMS` and ends in `.csv`, so a new MDAT download only has to be
-dropped into the folder. It must be downloaded the same way (same four
-variables, with the rows nested in the order MAR, HICOV, TEN and AGEP as the
-column), because the code splits the `->` group labels in that order. No
-counts or category totals are hard-coded; category labels are recoded by
-pattern (for example anything starting with "N/A" becomes "Group quarters").
+**Updated data.** The code looks for `health-insurance.csv` first, and if that
+is missing it uses the only `.csv` in the folder. A new MDAT download can be
+saved as `health-insurance.csv` or left as the sole csv next to the `.qmd`. It
+must be downloaded the same way (same four variables, with the rows nested in
+the order MAR, HICOV, TEN and AGEP as the column), because the code splits the
+`->` group labels in that order. No counts or category totals are hard-coded;
+category labels are recoded by pattern (for example anything starting with
+"N/A" becomes "Group quarters").
 
 ## The data
 

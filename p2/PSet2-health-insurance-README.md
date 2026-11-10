@@ -15,7 +15,7 @@ This README is the explanatory companion to the final files. The explanations be
 | `PSet2-ms7556.qmd` | Quarto source file containing the R code and all 10 graph definitions. Submit this. |
 | `outputs/submission/PSet2-ms7556.pdf` | Submitted PDF with the R code visible. |
 | `outputs/printout/PSet2-ms7556-printout.pdf` | Printout PDF with the code hidden and the graphs shown. Print this in color. |
-| `ACSPUMS1Y2024_2026-11-08T19_39_51.008Z.csv` | MDAT download required to run the source file. Keep it beside the `.qmd`. |
+| `health-insurance.csv` | MDAT download required to run the source file. Keep it beside the `.qmd`. |
 | `render_pdfs.sh` | Script that renders both PDFs. |
 | `PSet2-health-insurance.pdf` | The assignment handout. |
 
@@ -45,7 +45,7 @@ The script uses `quarto` from the PATH if available, and otherwise the copy bund
 
 ### Reproducibility with an updated dataset
 
-- The code reads the newest file in the folder whose name starts with `ACSPUMS` and ends in `.csv`, so a new MDAT download only needs to be placed in the folder. There are no references to a particular hard drive.
+- The code prefers `health-insurance.csv`, and otherwise uses the only `.csv` in the folder. A new MDAT download only needs to be placed beside the `.qmd`. There are no references to a particular hard drive.
 - No counts or totals are typed into the code; everything is computed from the file.
 - Category labels are recoded by pattern (for example, any tenure label starting with "N/A" becomes "Group quarters"), so small changes in label wording are tolerated.
 - The download must be made the same way as described in the handout: the same four variables, with `MAR`, `HICOV` and `TEN` nested in the rows in that order, and age groups as the column. The code splits the nested row label in that order.
