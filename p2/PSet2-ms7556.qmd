@@ -18,8 +18,12 @@ execute:
 #| label: setup
 library(tidyverse)
 
-# newest MDAT download in this folder (file names start with ACSPUMS)
-data_file <- tail(list.files(pattern = "^ACSPUMS.*\\.csv$"), 1)
+# Load data from .csv file
+data_file <- if (file.exists("health-insurance.csv")) {
+  "health-insurance.csv"
+} else {
+  list.files(pattern = "\\.csv$")[1]
+}
 
 # skip the 4 metadata lines at the top of the MDAT export
 raw <- read_csv(data_file, skip = 4,
