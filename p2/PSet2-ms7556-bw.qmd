@@ -1,0 +1,237 @@
+---
+title: "PSet 2: Health Insurance"
+format:
+  typst:
+    papersize: us-letter
+    margin: {x: 0.65in, y: 0.45in}
+    fontsize: 10pt
+    fig-width: 7.2
+    fig-format: png
+    fig-dpi: 180
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+library(tidyverse)
+
+# Load data from .csv file
+data_file <- if (file.exists("health-insurance.csv")) {
+  "health-insurance.csv"
+} else {
+  csv_files <- list.files(pattern = "\\.csv$")
+
+  if (length(csv_files) == 0) {
+    stop("No CSV file found in the working directory.")
+  }
+
+  csv_files[1]
+}
+
+# skip the 4 metadata lines at the top of the MDAT export
+raw <- read_csv(data_file, skip = 4,
+                col_types = cols(.default = col_character()))
+names(raw) <- c("group", "age", "count")
+
+# group rows look like "-> MAR -> HICOV -> TEN", age rows sit below them
+cells <- raw |>
+  mutate(count = parse_number(count)) |>
+  fill(group) |>
+  filter(!is.na(age), age != "Total") |>
+  separate_wider_delim(group, "->", too_few = "align_start",
+                       names = c(NA, "mar", "hicov", "ten")) |>
+  filter(!is.na(ten)) |>
+  mutate(
+    across(c(mar, hicov, ten), str_squish),
+    age = str_replace(age, "Between (\\d+) and (\\d+)", "\\1-\\2"),
+    age_lo = parse_number(age),
+    age = fct_reorder(age, age_lo),
+    mar = str_remove(mar, " or under 15 years old") |>
+      fct_relevel("Never married", "Married", "Separated", "Divorced"),
+    coverage = if_else(str_starts(hicov, "No"), "Uninsured", "Insured"),
+    ten = case_when(
+      str_starts(ten, "N/A") ~ "Group quarters",
+      str_detect(ten, "mortgage") ~ "Owned with mortgage",
+      str_detect(ten, "Free") ~ "Owned free and clear",
+      str_detect(ten, "without payment") ~ "No rent paid",
+      .default = ten
+    ) |>
+      fct_relevel("Owned with mortgage", "Owned free and clear",
+                  "Rented", "No rent paid")
+  )
+
+# weighted population and share uninsured for any grouping
+rates <- function(data, ...) {
+  data |>
+    group_by(...) |>
+    summarise(pop = sum(count),
+              uninsured = sum(count[coverage == "Uninsured"]),
+              .groups = "drop") |>
+    mutate(rate = uninsured / pop)
+}
+
+# black-and-white friendly encodings (greys + line/shape)
+coverage_cols <- c(Insured = "grey80", Uninsured = "black")
+# keep lines dark so they do not wash out on a B&W printer
+line_cols <- grey.colors(5, start = 0, end = 0.45)
+line_types <- c("solid", "dashed", "dotted", "longdash", "dotdash")
+point_shapes <- c(16, 17, 15, 3, 4)
+```
+
+```{r}
+#| label: fig1
+#| fig-height: 4
+# aggregate first so white borders do not stripe every cell
+cells |>
+  count(age, coverage, wt = count, name = "pop") |>
+  ggplot(aes(age, pop / 1e6, fill = coverage)) +
+  geom_col(color = "white", linewidth = 0.3) +
+  scale_fill_manual(values = coverage_cols) +
+  labs(title = "Population by age and coverage", x = "Age",
+       y = "People (millions)", fill = "Coverage",
+       caption = "Figure 1") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig2
+#| fig-height: 3.6
+rates(cells, age) |>
+  ggplot(aes(age, rate)) +
+  geom_col(fill = "black") +
+  scale_y_continuous(labels = scales::label_percent()) +
+  labs(title = "Uninsured rate by age", x = "Age",
+       y = "Uninsured", caption = "Figure 2") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig3
+#| fig-height: 2.8
+rates(cells, mar) |>
+  ggplot(aes(rate, fct_reorder(mar, rate))) +
+  geom_point(size = 3) +
+  scale_x_continuous(labels = scales::label_percent(),
+                     limits = c(0, NA)) +
+  labs(title = "Uninsured rate by marital status (all ages)",
+       x = "Uninsured", y = NULL, caption = "Figure 3") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig4
+#| fig-height: 4
+cells |>
+  count(age, mar, wt = count, name = "pop") |>
+  ggplot(aes(age, pop, fill = mar)) +
+  geom_col(position = "fill", color = "white", linewidth = 0.3) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  scale_fill_grey(start = 0.05, end = 0.9) +
+  labs(title = "Marital status by age", x = "Age",
+       y = "Share of age group", fill = "Marital status",
+       caption = "Figure 4") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig5
+#| fig-height: 4.2
+rates(cells, age, mar) |>
+  ggplot(aes(age, rate, color = mar, linetype = mar,
+             shape = mar, group = mar)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 2.5) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  scale_color_manual(values = line_cols) +
+  scale_linetype_manual(values = line_types) +
+  scale_shape_manual(values = point_shapes) +
+  labs(title = "Uninsured rate by age and marital status",
+       x = "Age", y = "Uninsured", color = "Marital status",
+       linetype = "Marital status", shape = "Marital status",
+       caption = "Figure 5") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig6
+#| fig-height: 2.8
+rates(cells, ten) |>
+  ggplot(aes(rate, fct_reorder(ten, rate))) +
+  geom_point(size = 3) +
+  scale_x_continuous(labels = scales::label_percent(),
+                     limits = c(0, NA)) +
+  labs(title = "Uninsured rate by housing tenure (all ages)",
+       x = "Uninsured", y = NULL, caption = "Figure 6") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig7
+#| fig-height: 4
+cells |>
+  count(age, ten, wt = count, name = "pop") |>
+  ggplot(aes(age, pop, fill = ten)) +
+  geom_col(position = "fill", color = "white", linewidth = 0.3) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  scale_fill_grey(start = 0.05, end = 0.9) +
+  labs(title = "Housing tenure by age", x = "Age",
+       y = "Share of age group", fill = "Tenure",
+       caption = "Figure 7") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig8
+#| fig-height: 4.2
+rates(cells, age, ten) |>
+  ggplot(aes(age, rate, color = ten, linetype = ten,
+             shape = ten, group = ten)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 2.5) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  scale_color_manual(values = line_cols) +
+  scale_linetype_manual(values = line_types) +
+  scale_shape_manual(values = point_shapes) +
+  labs(title = "Uninsured rate by age and housing tenure",
+       x = "Age", y = "Uninsured", color = "Tenure",
+       linetype = "Tenure", shape = "Tenure",
+       caption = "Figure 8") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig9
+#| fig-height: 3.4
+# ages 15-64 only, since almost everyone 65+ is insured
+cells |>
+  filter(age_lo < 65) |>
+  rates(mar, ten) |>
+  ggplot(aes(mar, ten, fill = rate)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "black",
+                      labels = scales::label_percent()) +
+  labs(title = "Uninsured rate, ages 15-64", x = "Marital status",
+       y = "Tenure", fill = "Uninsured", caption = "Figure 9") +
+  theme_minimal(12)
+```
+
+```{r}
+#| label: fig10
+#| fig-height: 4
+# one point per table cell (marital x coverage x tenure x age)
+cells |>
+  ggplot(aes(age, count + 1, color = coverage, shape = coverage)) +
+  geom_point(position = position_jitter(width = 0.25, height = 0,
+                                        seed = 1),
+             alpha = 0.8, size = 2) +
+  scale_y_log10(labels = scales::label_comma()) +
+  scale_color_manual(values = coverage_cols) +
+  scale_shape_manual(values = c(Insured = 1, Uninsured = 16)) +
+  labs(title = "Estimated people in each table cell", x = "Age",
+       y = "People + 1 (log scale)", color = "Coverage",
+       shape = "Coverage", caption = "Figure 10") +
+  theme_minimal(12)
+```
