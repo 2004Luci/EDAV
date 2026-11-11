@@ -22,7 +22,13 @@ library(tidyverse)
 data_file <- if (file.exists("health-insurance.csv")) {
   "health-insurance.csv"
 } else {
-  list.files(pattern = "\\.csv$")[1]
+  csv_files <- list.files(pattern = "\\.csv$")
+
+  if (length(csv_files) == 0) {
+    stop("No CSV file found in the working directory.")
+  }
+
+  csv_files[1]
 }
 
 # skip the 4 metadata lines at the top of the MDAT export
